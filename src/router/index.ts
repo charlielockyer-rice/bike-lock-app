@@ -21,6 +21,10 @@ const routes: Array<RouteRecordRaw> = [
         redirect: '/home/tab1'
       },
       {
+        path: '/bike/:id',
+        component: () => import('../views/ViewBikePage.vue')
+      },
+      {
         path: 'tab1',
         component: Tab1
       },
