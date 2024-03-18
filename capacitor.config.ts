@@ -6,7 +6,10 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     androidScheme: 'https'
-  }
+  },
+  // ios: {
+  //   path: 'ios/',
+  // },
 };
 
 export default config;

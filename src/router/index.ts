@@ -3,7 +3,7 @@ import { RouteRecordRaw } from 'vue-router';
 import HomePage from '../views/HomePage.vue';
 
 // Import your tab components
-import Tab1 from '../views/Tab1.vue';
+import Tab1 from '../views/Tab1-connections.vue';
 import Tab2 from '../views/Tab2.vue';
 import Tab3 from '../views/Tab3.vue';
 
