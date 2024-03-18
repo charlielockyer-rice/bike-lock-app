@@ -1,45 +1,47 @@
-import { BleClient } from '@capacitor-community/bluetooth-le';
 import { ref, Ref } from 'vue';
-import { BLEDevice } from '@/types/BLEDevice'; // Assuming this global type declaration
+import { BleDevice } from '../types/BleDevice'; // Assuming this global type declaration
+import { BluetoothLe } from '@capacitor-community/bluetooth-le';
 
 // Devices discovered during scanning
 const devices: Ref<BLEDevice[]> = ref([]);
 
-// Initialize BLE and start scanning
 const initializeBle = async () => {
-    console.log("Scan for Devices button clicked."); // This line logs to the console
-    try {
-      await BleClient.initialize();
-      await BleClient.requestLEScan({}, (result) => {
-        console.log('Discovered device:', result);
-        devices.value.push({
-          deviceId: result.device.deviceId,
-          name: result.device.name,
-        });
-      });
-  
-      console.log("BLE scan initialized.");
-  
-      setTimeout(async () => {
-        await BleClient.stopLEScan();
-        console.log("Stopped scanning");
-      }, 10000);
-    } catch (error) {
-      console.error('BLE error:', error);
+  await BluetoothLe.initialize();
+  console.log('BLE initialized');
+};
+
+const scanForDevices = async (): Promise<BleDevice[]> => {
+  await BluetoothLe.requestLEScan();
+
+  const foundDevices: BleDevice[] = []; // Renamed to avoid name conflicts
+
+  // Add a listener for the scan result event
+  const listener = await BluetoothLe.addListener('onScanResult', (result) => {
+    // Assuming result.device is of type BleDevice and has a property deviceId
+    if (result.device && 'deviceId' in result.device) {
+      foundDevices.push(result.device); // Push the BleDevice object directly
     }
-  };
-  
+  });
 
-// Connect to a specific device by its deviceId
-async function pairDevice(deviceId: string) {
-  try {
-    await BleClient.stopLEScan(); // Consider stopping scan before attempting to connect
-    console.log(`Connecting to ${deviceId}...`);
-    await BleClient.connect(deviceId);
-    console.log(`Connected to ${deviceId}`);
-  } catch (error) {
-    console.error('Error connecting to device:', error);
-  }
-}
+  console.log('Scanning for devices...');
 
-export { devices, initializeBle, pairDevice };
+  // Stop scanning after a certain timeout and remove the listener
+  setTimeout(async () => {
+    await BluetoothLe.stopLEScan();
+    listener.remove(); // Use the listener's remove method to clean up
+    console.log('Scan stopped');
+  }, 10000); // Adjust the timeout as needed
+
+  return new Promise((resolve) => {
+    // Resolve the devices list when scanning stops
+    setTimeout(() => resolve(foundDevices), 10050);
+  });
+};
+
+const pairDevice = async (deviceId: string) => {
+  await BluetoothLe.connect({ deviceId });
+  console.log(`Connected to device ${deviceId}`);
+};
+
+export { initializeBle, scanForDevices, pairDevice };
+

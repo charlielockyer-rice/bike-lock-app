@@ -7,9 +7,15 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https'
   },
-  // ios: {
-  //   path: 'ios/',
-  // },
+  plugins: {
+    BluetoothLe: {
+      serviceUUIDs: ['your-service-uuids'], // Optional: add your service UUIDs if you want to filter
+      peripheral: {
+        requestLEScan: true,
+        optionalServices: ['your-service-uuids'] // Optional: add service UUIDs if needed
+      }
+    }
+  },
 };
 
 export default config;

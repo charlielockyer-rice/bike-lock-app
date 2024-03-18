@@ -2,12 +2,12 @@ import { ref, Ref } from 'vue';
 import { BleClient, RequestBleDeviceOptions, ScanResult } from '@capacitor-community/bluetooth-le';
 
 // BLEDevice.ts
-export interface BLEDevice {
+export interface BleDevice {
   deviceId: string;
   name?: string;
 }
   
-// const devices: Ref<BLEDevice[]> = ref([]);
+// const devices: Ref<BleDevice[]> = ref([]);
 
 // const initializeBle = async () => {
 //   try {

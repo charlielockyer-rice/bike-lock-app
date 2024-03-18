@@ -26,17 +26,17 @@
       <ion-router-outlet></ion-router-outlet> <!-- This needs to be added -->
       <ion-tab-bar slot="bottom">
         <ion-tab-button tab="tab1" href="/home/tab1">
-          <ion-icon :icon="bicycle"></ion-icon>
+          <ion-icon name="bicycle"></ion-icon>
           <ion-label>Bikes</ion-label>
         </ion-tab-button>
         
         <ion-tab-button tab="tab2" href="/home/tab2">
-          <ion-icon :icon="lockClosed"></ion-icon>
+          <ion-icon name="lock-closed"></ion-icon>
           <ion-label>Lock</ion-label>
         </ion-tab-button>
         
         <ion-tab-button tab="tab3" href="/home/tab3">
-          <ion-icon :icon="settings"></ion-icon>
+          <ion-icon name="settings"></ion-icon>
           <ion-label>Settings</ion-label>
         </ion-tab-button>
       </ion-tab-bar>
@@ -63,7 +63,6 @@ import {
 } from '@ionic/vue';
 
 // import BikeListItem from '@/components/BikeListItem.vue';
-import { bicycle, lockClosed, settings } from 'ionicons/icons';
 import Tab1Component from '@/views/Tab1.vue';
 import Tab2Component from '@/views/Tab2.vue';
 import Tab3Component from '@/views/Tab3.vue';

@@ -20,6 +20,16 @@ import '@ionic/vue/css/text-transformation.css';
 import '@ionic/vue/css/flex-utils.css';
 import '@ionic/vue/css/display.css';
 
+import { addIcons } from 'ionicons';
+import { bicycle, lockClosed, lockOpen, settingsSharp } from 'ionicons/icons';
+
+addIcons({
+  'bicycle': bicycle,
+  'lock-closed': lockClosed,
+  'lock-open': lockOpen,
+  'settings': settingsSharp
+});
+
 /* Theme variables */
 import './theme/variables.css';
 

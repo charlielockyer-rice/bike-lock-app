@@ -14,29 +14,29 @@ PODS:
     - Capacitor
 
 DEPENDENCIES:
-  - "Capacitor (from `../node_modules/@capacitor/ios`)"
-  - "CapacitorApp (from `../node_modules/@capacitor/app`)"
-  - "CapacitorCommunityBluetoothLe (from `../node_modules/@capacitor-community/bluetooth-le`)"
-  - "CapacitorCordova (from `../node_modules/@capacitor/ios`)"
-  - "CapacitorHaptics (from `../node_modules/@capacitor/haptics`)"
-  - "CapacitorKeyboard (from `../node_modules/@capacitor/keyboard`)"
-  - "CapacitorStatusBar (from `../node_modules/@capacitor/status-bar`)"
+  - "Capacitor (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
+  - "CapacitorCommunityBluetoothLe (from `../../node_modules/@capacitor-community/bluetooth-le`)"
+  - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorHaptics (from `../../node_modules/@capacitor/haptics`)"
+  - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
+  - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
 
 EXTERNAL SOURCES:
   Capacitor:
-    :path: "../node_modules/@capacitor/ios"
+    :path: "../../node_modules/@capacitor/ios"
   CapacitorApp:
-    :path: "../node_modules/@capacitor/app"
+    :path: "../../node_modules/@capacitor/app"
   CapacitorCommunityBluetoothLe:
-    :path: "../node_modules/@capacitor-community/bluetooth-le"
+    :path: "../../node_modules/@capacitor-community/bluetooth-le"
   CapacitorCordova:
-    :path: "../node_modules/@capacitor/ios"
+    :path: "../../node_modules/@capacitor/ios"
   CapacitorHaptics:
-    :path: "../node_modules/@capacitor/haptics"
+    :path: "../../node_modules/@capacitor/haptics"
   CapacitorKeyboard:
-    :path: "../node_modules/@capacitor/keyboard"
+    :path: "../../node_modules/@capacitor/keyboard"
   CapacitorStatusBar:
-    :path: "../node_modules/@capacitor/status-bar"
+    :path: "../../node_modules/@capacitor/status-bar"
 
 SPEC CHECKSUMS:
   Capacitor: fc155ee2ee45a2093d716f13cf5aa5a865e2d85a
@@ -47,6 +47,6 @@ SPEC CHECKSUMS:
   CapacitorKeyboard: aec619a578235c6ce279075009a2689c2cf5c42c
   CapacitorStatusBar: f390fbb49b82ffb754ea4b3cf71dc8b048baf3e7
 
-PODFILE CHECKSUM: 4bda01f20d9abd7ad22eb39be375e7de97e02e01
+PODFILE CHECKSUM: 5620fcbc6dc0c7ec5d0eae61d9aa115ebb67cb08
 
 COCOAPODS: 1.15.2

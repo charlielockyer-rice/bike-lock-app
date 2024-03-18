@@ -1,57 +1,60 @@
 <template>
-    <ion-page>
-      <ion-header :translucent="true">
-        <ion-toolbar>
-          <ion-title>Settings</ion-title>
-        </ion-toolbar>
-      </ion-header>
-  
-      <ion-content :fullscreen="true">
-        <ion-refresher slot="fixed" @ionRefresh="refresh($event)">
-          <ion-refresher-content></ion-refresher-content>
-        </ion-refresher>
-  
-        <ion-header collapse="condense">
-          <ion-toolbar>
-            <ion-title size="large">Settings</ion-title>
-          </ion-toolbar>
-        </ion-header>
-  
-        <ion-list>
-          <BikeListItem v-for="bike in bikes" :key="bike.id" :bike="bike" />
-        </ion-list>
-      </ion-content>
-    </ion-page>
-  </template>
-  
-  <script setup lang="ts">
-  import {
-    IonContent,
-    IonHeader,
-    IonList,
-    IonPage,
-    IonRefresher,
-    IonRefresherContent,
-    IonTitle,
-    IonToolbar,
-    IonTabs,
-    IonTabBar,
-    IonTabButton,
-    IonIcon,
-    IonLabel
-  } from '@ionic/vue';
-  
-  import BikeListItem from '@/components/BikeListItem.vue';
-  // import { bicycle, lockClosed, settings } from 'ionicons/icons';
-  import { getBikes, Bike } from '@/data/bikes';
-  import { ref } from 'vue';
-  
-  const bikes = ref<Bike[]>(getBikes());
-  
-  const refresh = (ev: CustomEvent) => {
-    setTimeout(() => {
-      ev.detail.complete();
-    }, 3000);
-  };
-  </script>
-  
+  <ion-page>
+    <ion-header :translucent="true">
+      <ion-toolbar>
+        <ion-title>Settings</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content :fullscreen="true">
+      <ion-list>
+        <ion-item>
+          <ion-label>Change PIN</ion-label>
+          <ion-input placeholder="Enter new PIN"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Enable Notifications</ion-label>
+          <ion-toggle v-model="notificationsEnabled"></ion-toggle>
+        </ion-item>
+
+        <ion-item button @click="navigateToConnectedDevices()">
+          <ion-label>Manage Connected Devices</ion-label>
+        </ion-item>
+
+        <ion-item button @click="navigateToHelpAndSupport()">
+          <ion-label>Help and Support</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ion-page>
+</template>
+
+<script setup lang="ts">
+import {
+  IonContent,
+  IonHeader,
+  IonList,
+  IonPage,
+  IonTitle,
+  IonToolbar,
+  IonItem,
+  IonLabel,
+  IonInput,
+  IonToggle,
+} from '@ionic/vue';
+import { ref } from 'vue';
+
+const notificationsEnabled = ref(true);
+
+// Placeholder functions for navigation
+const navigateToConnectedDevices = () => {
+  console.log('Navigating to Manage Connected Devices');
+  // Implement navigation logic here
+};
+
+const navigateToHelpAndSupport = () => {
+  console.log('Navigating to Help and Support');
+  // Implement navigation logic here
+};
+</script>

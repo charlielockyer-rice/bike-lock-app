@@ -8,7 +8,7 @@
 
     <ion-content :fullscreen="true">
       <!-- Button to start scanning for BLE devices -->
-      <ion-button @click="initializeBle">Scan for Devices</ion-button>
+      <ion-button @click="startScan">Scan for Devices</ion-button>
 
       <!-- List of discovered devices -->
       <ion-list>
@@ -24,5 +24,23 @@
 
 <script setup lang="ts">
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton, IonList, IonItem } from '@ionic/vue';
-import { devices as bleDevices, initializeBle, pairDevice } from '@/services/bleService';
-</script>
+import { scanForDevices, initializeBle, pairDevice } from '@/services/BleService';
+import { ref, onMounted } from 'vue';
+import { BleDevice } from '@/types/BleDevice';
+
+// Use the interface to type your ref
+const bleDevices = ref<BleDevice[]>([]); // This now expects an array of BleDevice objects
+const isScanning = ref(false);
+
+const startScan = async () => {
+  isScanning.value = true;
+  const devices = await scanForDevices();
+  // Ensure that the devices array is correctly typed or cast it to BleDevice[]
+  bleDevices.value = devices as BleDevice[];
+  isScanning.value = false;
+};
+
+onMounted(async () => {
+  await initializeBle();
+});
+</script>@/services/BleService
