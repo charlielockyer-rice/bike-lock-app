@@ -5,6 +5,7 @@ import { BleClient, RequestBleDeviceOptions, ScanResult } from '@capacitor-commu
 export interface BleDevice {
   deviceId: string;
   name?: string;
+  rssi?: number;
 }
   
 // const devices: Ref<BleDevice[]> = ref([]);
