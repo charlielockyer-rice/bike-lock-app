@@ -1,27 +1,5 @@
 <template>
   <ion-page>
-    <!-- <ion-header :translucent="true">
-      <ion-toolbar>
-        <ion-title>My Bike</ion-title>
-      </ion-toolbar>
-    </ion-header> -->
-
-    <!-- <ion-content :fullscreen="true">
-      <ion-refresher slot="fixed" @ionRefresh="refresh($event)">
-        <ion-refresher-content></ion-refresher-content>
-      </ion-refresher>
-
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">My Bike</ion-title>
-        </ion-toolbar>
-      </ion-header>
-
-      <ion-list>
-        <BikeListItem v-for="bike in bikes" :key="bike.id" :bike="bike" />
-      </ion-list>
-    </ion-content> -->
-
     <ion-tabs>
       <ion-router-outlet></ion-router-outlet> <!-- This needs to be added -->
       <ion-tab-bar slot="bottom">

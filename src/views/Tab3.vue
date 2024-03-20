@@ -2,7 +2,7 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
-        <ion-title>Settings</ion-title>
+        <ion-title size="large">Settings</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -22,6 +22,20 @@
           <ion-label>Manage Connected Devices</ion-label>
         </ion-item>
 
+        <ion-item @click="showClearDeviceIdOption = !showClearDeviceIdOption">
+          <ion-label>Device ID</ion-label>
+          <ion-label>{{ savedDeviceId }}</ion-label>
+        </ion-item>
+        <!-- Clear Device ID Option -->
+        <ion-item v-if="showClearDeviceIdOption" button @click="clearSavedDeviceId">
+          <ion-label color="danger">Clear Device ID</ion-label>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Connection Status</ion-label>
+          <ion-label>{{ connectionStatus }}</ion-label>
+        </ion-item>
+
         <ion-item button @click="navigateToHelpAndSupport()">
           <ion-label>Help and Support</ion-label>
         </ion-item>
@@ -32,22 +46,36 @@
 
 <script setup lang="ts">
 import {
-  IonContent,
-  IonHeader,
-  IonList,
-  IonPage,
-  IonTitle,
-  IonToolbar,
-  IonItem,
-  IonLabel,
-  IonInput,
-  IonToggle,
+IonContent,
+IonHeader,
+IonList,
+IonPage,
+IonTitle,
+IonToolbar,
+IonItem,
+IonLabel,
+IonInput,
+IonToggle,
 } from '@ionic/vue';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { disconnectFromDevice, getSavedDeviceId, connectionStatus } from '@/services/BleService';
+import { Preferences } from '@capacitor/preferences';
 
 const notificationsEnabled = ref(true);
+const savedDeviceId = ref('');
+const showClearDeviceIdOption = ref(false);
 
-// Placeholder functions for navigation
+onMounted(async () => {
+  savedDeviceId.value = await getSavedDeviceId() || 'No device connected';
+});
+
+const clearSavedDeviceId = async () => {
+  await disconnectFromDevice(savedDeviceId.value); // Disconnect from the device
+  await Preferences.remove({ key: 'connectedDeviceId' });
+  savedDeviceId.value = ''; // Update local state to reflect the cleared ID
+  showClearDeviceIdOption.value = false; // Hide the clear option
+};
+
 const navigateToConnectedDevices = () => {
   console.log('Navigating to Manage Connected Devices');
   // Implement navigation logic here

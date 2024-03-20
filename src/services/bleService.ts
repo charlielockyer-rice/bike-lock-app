@@ -2,29 +2,31 @@ import { ref, Ref } from 'vue';
 import { BleClient } from '@capacitor-community/bluetooth-le';
 import { BleDevice } from '@/types/BleDevice';
 import { LocalNotifications } from '@capacitor/local-notifications';
+import { Preferences } from '@capacitor/preferences';
 
 export const devices: Ref<BleDevice[]> = ref([]);
-const connectedDeviceId: Ref<string | null> = ref(null);
+export const connectedDeviceId: Ref<string | null> = ref(null);
+export const connectionStatus: Ref<string> = ref('Disconnected');
 
 const BIKE_SERVICE = '9a20edd4-09de-4d6b-8a96-f5b93db51f48';
 const characteristicUUID = '1647ae1b-4a2d-4862-bd94-9b743dfc03f2';
 
 
-const initializeBle = async () => {
+export const initializeBle = async () => {
   try {
     await BleClient.initialize();
     console.log('BLE initialized');
-    
+
   } catch (error) {
     console.error('BLE initialization failed', error);
   }
 };
 
-const scanForDevices = async () => {
+export const scanForDevices = async () => {
   try {
-    console.log('Starting BLE scan...');
+    // console.log('Starting BLE scan...');
     // start the scan
-    await BleClient.requestLEScan({ services: [BIKE_SERVICE] }, (result) => {
+    await BleClient.requestLEScan({}, (result) => {
       const newDevice = {
         deviceId: result.device.deviceId,
         name: result.device.name,
@@ -32,13 +34,13 @@ const scanForDevices = async () => {
       };
       // Update the devices array reactively
       devices.value.push(newDevice);
-      console.log('Discovered device:', newDevice);
+      // console.log('Discovered device:', newDevice);
     });
 
     // stop scanning after 3 seconds
     setTimeout(() => {
       BleClient.stopLEScan();
-      console.log('BLE scan stopped');
+      // console.log('BLE scan stopped');
     }, 3000);
   } catch (error) {
     console.error('Error during BLE scan', error);
@@ -46,17 +48,21 @@ const scanForDevices = async () => {
 };
 
 // Call this method when a device in the list is clicked to connect
-const selectAndConnectToDevice = async (device: BleDevice) => {
+export const selectAndConnectToDevice = async (device: BleDevice) => {
   await connectToDevice(device.deviceId);
 };
 
 
-const connectToDevice = async (deviceId: string): Promise<boolean> => {
+export const connectToDevice = async (deviceId: string): Promise<boolean> => {
   try {
     console.log(`Attempting to connect to device: ${deviceId}`);
     await BleClient.connect(deviceId);
     connectedDeviceId.value = deviceId; // Set the device as connected
     console.log('Device connected');
+    connectionStatus.value = 'Connected';
+
+    // Save the connected device ID to preferences
+    await saveConnectedDeviceId(deviceId);
 
     // Auto-subscribe to notifications upon connection
     await startNotifications(deviceId, BIKE_SERVICE, characteristicUUID);
@@ -67,11 +73,52 @@ const connectToDevice = async (deviceId: string): Promise<boolean> => {
   }
 };
 
-const isConnectedToDevice = (device: BleDevice): boolean => {
+export async function autoConnectToSavedDevice() {
+  console.log('Attempting to auto-connect to saved device...');
+  const { value: deviceId } = await Preferences.get({ key: 'connectedDeviceId' });
+  if (deviceId) {
+    console.log('Auto-connecting to saved device:', deviceId);
+    // NEW ATTEMPT
+    await BleClient.requestLEScan({ services: [BIKE_SERVICE] }, (result) => {
+      console.log('Scanning initialized; discovered device:', result.device);
+      if (result.device.deviceId === deviceId) {
+        try {
+          connectToDevice(deviceId);
+          BleClient.stopLEScan();
+          console.log('Auto-connected to saved device:', deviceId);
+        } catch (error) {
+          BleClient.stopLEScan();
+          console.error('Error connecting to device:', error);
+        }
+      }
+    });
+
+    // BleClient.stopLEScan();
+    // const device = await BleClient.requestDevice({ services: [BIKE_SERVICE] });
+    // await connectToDevice(deviceId);
+  }
+}
+
+export const isConnectedToDevice = (device: BleDevice): boolean => {
   return device.deviceId === connectedDeviceId.value;
 };
 
-const startNotifications = async (deviceId: string, serviceUUID: string, characteristicUUID: string) => {
+export async function saveConnectedDeviceId(deviceId: string) {
+  await Preferences.set({
+    key: 'connectedDeviceId',
+    value: deviceId,
+  });
+}
+
+export const getSavedDeviceId = async (): Promise<string> => {
+  const { value } = await Preferences.get({ key: 'connectedDeviceId' });
+  if (value) {
+    return value;
+  }
+  return '';
+};
+
+export const startNotifications = async (deviceId: string, serviceUUID: string, characteristicUUID: string) => {
   try {
     console.log('Starting notifications for characteristic:', characteristicUUID);
 
@@ -98,7 +145,7 @@ const startNotifications = async (deviceId: string, serviceUUID: string, charact
   }
 };
 
-const sendNotification = async (title: string, body: string) => {
+export const sendNotification = async (title: string, body: string) => {
   await LocalNotifications.requestPermissions();
 
   LocalNotifications.schedule({
@@ -107,8 +154,8 @@ const sendNotification = async (title: string, body: string) => {
         title,
         body,
         id: new Date().getTime(), // Use something unique if needed
-        schedule: { at: new Date(new Date().getTime() + 1000) }, // Schedule for immediate display
-        // sound: null,
+        schedule: { at: new Date(new Date().getTime()) }, // Schedule for immediate display
+        sound: '',
         // attachments: null,
         actionTypeId: "",
         extra: null
@@ -117,10 +164,13 @@ const sendNotification = async (title: string, body: string) => {
   });
 };
 
-
-function onDisconnect(deviceId: string): void {
-  console.log(`device ${deviceId} disconnected, attempting to reconnect...`);
-  connectToDevice(deviceId);
+export async function disconnectFromDevice(deviceId: string) {
+  await BleClient.disconnect(deviceId);
+  connectedDeviceId.value = '';
+  connectionStatus.value = 'Disconnected';
 }
 
-export { initializeBle, scanForDevices, selectAndConnectToDevice, connectToDevice, isConnectedToDevice, startNotifications };
+export function onDisconnect(deviceId: string): void {
+  console.log(`device ${deviceId} disconnected, attempting to reconnect...`);
+  // connectToDevice(deviceId);
+}

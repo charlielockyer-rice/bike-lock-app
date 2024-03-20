@@ -33,7 +33,7 @@ const routes: Array<RouteRecordRaw> = [
         ]
       },
       {
-        path: '/legacy-bike/:id',
+        path: '/bike/:id',
         component: () => import('../views/ViewBikePage.vue')
       },
       {
