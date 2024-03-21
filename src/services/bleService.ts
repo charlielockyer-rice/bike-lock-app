@@ -9,7 +9,7 @@ export const connectedDeviceId: Ref<string | null> = ref(null);
 export const connectionStatus: Ref<string> = ref('Disconnected');
 
 const BIKE_SERVICE = '9a20edd4-09de-4d6b-8a96-f5b93db51f48';
-const characteristicUUID = '1647ae1b-4a2d-4862-bd94-9b743dfc03f2';
+const BIKE_CHARACTERISTIC = '1647ae1b-4a2d-4862-bd94-9b743dfc03f2';
 
 
 export const initializeBle = async () => {
@@ -65,7 +65,7 @@ export const connectToDevice = async (deviceId: string): Promise<boolean> => {
     await saveConnectedDeviceId(deviceId);
 
     // Auto-subscribe to notifications upon connection
-    await startNotifications(deviceId, BIKE_SERVICE, characteristicUUID);
+    await startNotifications(deviceId, BIKE_SERVICE, BIKE_CHARACTERISTIC);
     return true;
   } catch (error) {
     console.error(`Could not connect to device: ${deviceId}`, error);
@@ -163,6 +163,24 @@ export const sendNotification = async (title: string, body: string) => {
     ],
   });
 };
+
+export async function sendCommandToDevice(deviceId: string, command: number[]) {
+  try {
+    // Convert the command to an ArrayBuffer
+    const commandBuffer = new Uint8Array(command).buffer;
+
+    // Assuming commandBuffer is your ArrayBuffer
+    const dataView = new DataView(commandBuffer);
+
+    // Then pass this DataView when calling write
+    await BleClient.write(deviceId, BIKE_SERVICE, BIKE_CHARACTERISTIC, dataView);
+
+
+    console.log('Command sent successfully');
+  } catch (error) {
+    console.error('Error sending command to device:', error);
+  }
+}
 
 export async function disconnectFromDevice(deviceId: string) {
   await BleClient.disconnect(deviceId);
