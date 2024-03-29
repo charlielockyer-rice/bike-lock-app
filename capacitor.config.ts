@@ -13,7 +13,10 @@ const config: CapacitorConfig = {
       peripheral: {
         requestLEScan: true,
         optionalServices: ['your-service-uuids'] // Optional: add service UUIDs if needed
-      }
+      },
+      PushNotifications: {
+        presentationOptions: ["badge", "sound", "alert"],
+      },
     }
   },
 };

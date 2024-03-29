@@ -23,6 +23,8 @@ import '@ionic/vue/css/display.css';
 import { addIcons } from 'ionicons';
 import { bicycle, lockClosed, lockOpen, settingsSharp } from 'ionicons/icons';
 
+import initializePushNotifications from './services/pushNotificationService';
+
 addIcons({
   'bicycle': bicycle,
   'lock-closed': lockClosed,
@@ -36,6 +38,8 @@ import './theme/variables.css';
 const app = createApp(App)
   .use(IonicVue)
   .use(router);
+
+initializePushNotifications();
   
 router.isReady().then(() => {
   app.mount('#app');
