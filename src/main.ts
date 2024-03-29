@@ -19,6 +19,8 @@ import '@ionic/vue/css/text-alignment.css';
 import '@ionic/vue/css/text-transformation.css';
 import '@ionic/vue/css/flex-utils.css';
 import '@ionic/vue/css/display.css';
+import 'leaflet/dist/leaflet.css';
+
 
 import { addIcons } from 'ionicons';
 import { bicycle, lockClosed, lockOpen, settingsSharp } from 'ionicons/icons';
