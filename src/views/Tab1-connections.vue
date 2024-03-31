@@ -2,7 +2,7 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
-        <ion-title size="large">My Bike</ion-title>
+        <ion-title size="large">My Lock</ion-title>
       </ion-toolbar>
     </ion-header>
 

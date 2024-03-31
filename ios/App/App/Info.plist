@@ -26,6 +26,10 @@
 	<string>Our app uses Bluetooth to find, connect to, and transfer data to and from your bike.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>Our app uses Bluetooth to find, connect to, and transfer data to and from your bike.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Our app uses your location to display your distance from your bike.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Our app uses your location to display your distance from your bike.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>

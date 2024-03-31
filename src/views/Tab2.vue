@@ -2,7 +2,7 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
-        <ion-title size="large">My Lock</ion-title>
+        <ion-title size="large">My Bike</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -10,17 +10,6 @@
       <ion-refresher slot="fixed" @ionRefresh="refresh($event)">
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
-<!-- 
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">My Lock</ion-title>
-        </ion-toolbar>
-      </ion-header> -->
-
-      <!-- <ion-list>
-        <BikeListItem v-for="bike in bikes" :key="bike.id" :bike="bike" />
-      </ion-list> -->
-
       <div id="mapid"></div>
     </ion-content>
   </ion-page>
@@ -30,44 +19,56 @@
 import {
   IonContent,
   IonHeader,
-  IonList,
   IonPage,
   IonRefresher,
   IonRefresherContent,
   IonTitle,
   IonToolbar,
-  IonTabs,
-  IonTabBar,
-  IonTabButton,
-  IonIcon,
-  IonLabel
 } from '@ionic/vue';
 
 import { onMounted, ref } from 'vue';
+import { geolocationService } from '@/services/geolocationService';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css'; // Make sure to import the Leaflet CSS
 
-onMounted(() => {
-  const map = L.map('mapid').setView([51.505, -0.09], 13);
+onMounted(async () => {
+  const map = L.map('mapid').setView([29.72078, -95.401097], 13);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  }).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-  L.marker([51.5, -0.09]).addTo(map)
-    .bindPopup('Your Location')
-    .openPopup();
+  const position = await geolocationService.getCurrentPosition();
 
-  L.marker([51.505, -0.09]).addTo(map)
-    .bindPopup('BLE Device Location')
-    .openPopup();
+  // Adjusted icon paths
+  const yourLocationIcon = L.icon({
+    iconUrl: `/images/my-location.png`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 30],
+    popupAnchor: [0, -30]
+  });
+
+  const deviceLocationIcon = L.icon({
+    iconUrl: `/images/bike-location.png`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 30],
+    popupAnchor: [0, -30]
+  });
+
+  L.marker([29.72078815, -95.401097533], { icon: deviceLocationIcon }).addTo(map)
+    .bindPopup('My Bike')
+
+  if (position) {
+    console.log('Position:', position);
+    map.setView([position.coords.latitude, position.coords.longitude], 13);
+    map.invalidateSize();
+
+    L.marker([position.coords.latitude, position.coords.longitude], { icon: yourLocationIcon }).addTo(map)
+      .bindPopup('Current Location')
+  }
 
   // Invalidate size after a slight delay to ensure container is rendered
-  setTimeout(() => map.invalidateSize(), 100);
+  // setTimeout(() => map.invalidateSize(), 100);
 });
 
-import BikeListItem from '@/components/BikeListItem.vue';
-// import { bicycle, lockClosed, settings } from 'ionicons/icons';
 import { getBikes, Bike } from '@/data/bikes';
 
 const bikes = ref<Bike[]>(getBikes());
@@ -80,11 +81,11 @@ const refresh = (ev: CustomEvent) => {
 </script>
 
 <style>
-  #mapid {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    left: 0;
-  }
+#mapid {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+}
 </style>

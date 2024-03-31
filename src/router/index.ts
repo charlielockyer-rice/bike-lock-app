@@ -7,6 +7,7 @@ import Tab1 from '../views/Tab1-connections.vue';
 import Tab2 from '../views/Tab2.vue';
 import Tab3 from '../views/Tab3.vue';
 import BikeDetailView from '@/views/BikeDetailView.vue';
+// import Map from '@/views/Map.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
