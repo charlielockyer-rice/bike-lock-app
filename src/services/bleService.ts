@@ -7,9 +7,15 @@ import { Preferences } from '@capacitor/preferences';
 export const devices: Ref<BleDevice[]> = ref([]);
 export const connectedDeviceId: Ref<string | null> = ref(null);
 export const connectionStatus: Ref<string> = ref('Disconnected');
+export const isLocked = ref();
 
 const BIKE_SERVICE = '9a20edd4-09de-4d6b-8a96-f5b93db51f48';
-const BIKE_CHARACTERISTIC = '1647ae1b-4a2d-4862-bd94-9b743dfc03f2';
+const BIKE_ARMED = '1647ae1b-4a2d-4862-bd94-9b743dfc03f2';
+const BIKE_LOCKED = 'e6935a88-1400-4417-ac23-dd4b607d0fc6';
+
+// Example command bytes or data to send to the BLE device to lock/unlock
+const LOCK_COMMAND = [0x01]; // Command to lock the bike
+const UNLOCK_COMMAND = [0x00]; // Command to unlock the bike
 
 
 export const initializeBle = async () => {
@@ -65,7 +71,12 @@ export const connectToDevice = async (deviceId: string): Promise<boolean> => {
     await saveConnectedDeviceId(deviceId);
 
     // Auto-subscribe to notifications upon connection
-    await startNotifications(deviceId, BIKE_SERVICE, BIKE_CHARACTERISTIC);
+    await startNotifications(deviceId, BIKE_SERVICE, BIKE_ARMED);
+
+    // Fetch the lock status upon connection
+    const lockStatus = await fetchLockStatus(deviceId);
+    isLocked.value = lockStatus === null ? false : lockStatus;
+
     return true;
   } catch (error) {
     console.error(`Could not connect to device: ${deviceId}`, error);
@@ -99,8 +110,12 @@ export async function autoConnectToSavedDevice() {
   }
 }
 
-export const isConnectedToDevice = (device: BleDevice): boolean => {
-  return device.deviceId === connectedDeviceId.value;
+export const isConnected = (): boolean => {
+  return connectedDeviceId.value !== null;
+}
+
+export const isConnectedToDevice = (deviceId: string): boolean => {
+  return deviceId === connectedDeviceId.value;
 };
 
 export async function saveConnectedDeviceId(deviceId: string) {
@@ -154,7 +169,7 @@ export const sendNotification = async (title: string, body: string) => {
         title,
         body,
         id: new Date().getTime(), // Use something unique if needed
-        schedule: { at: new Date(new Date().getTime()) }, // Schedule for immediate display
+        schedule: { at: new Date(new Date().getTime() + 50) }, // Schedule for immediate display
         sound: '',
         // attachments: null,
         actionTypeId: "",
@@ -173,12 +188,58 @@ export async function sendCommandToDevice(deviceId: string, command: number[]) {
     const dataView = new DataView(commandBuffer);
 
     // Then pass this DataView when calling write
-    await BleClient.write(deviceId, BIKE_SERVICE, BIKE_CHARACTERISTIC, dataView);
-
+    await BleClient.write(deviceId, BIKE_SERVICE, BIKE_LOCKED, dataView);
 
     console.log('Command sent successfully');
   } catch (error) {
     console.error('Error sending command to device:', error);
+  }
+}
+
+// This method toggles the bike's lock status
+export async function toggleLock(): Promise<boolean> {
+  const deviceId = await getSavedDeviceId();
+  try {
+    // Determine the command based on the current lock status
+    const command = await fetchLockStatus(deviceId) ? UNLOCK_COMMAND : LOCK_COMMAND;
+    // Send the command to the BLE device
+    await sendCommandToDevice(deviceId, command);
+
+    command === LOCK_COMMAND ? isLocked.value = true : isLocked.value = false;
+
+    console.log('Lock status toggled');
+    return true; // Return true on success
+  } catch (error) {
+    console.error('Error toggling lock status:', error);
+    return false; // Return false on error
+  }
+}
+
+// This method fetches the current lock status from the BLE device
+// Assuming the status can be determined by reading a characteristic that returns either LOCK_COMMAND or UNLOCK_COMMAND
+export async function fetchLockStatus(deviceId: string): Promise<boolean|null> {
+  try {
+    // Replace 'SERVICE_UUID' and 'CHARACTERISTIC_UUID' with your actual values
+    const response = await BleClient.read(deviceId, BIKE_SERVICE, BIKE_LOCKED);
+
+    const dataView = new DataView(response.buffer);
+    // Assuming the first byte indicates lock status
+    const status = dataView.getUint8(0);
+
+    // Determine the lock status based on the response
+    if (status === LOCK_COMMAND[0]) {
+      console.log('Bike is locked');
+      return true;
+    } else if (status === UNLOCK_COMMAND[0]) {
+      console.log('Bike is unlocked');
+      return false;
+    } else {
+      console.log('Received unknown status:', status)
+      return null; // Return null if status is unknown
+    }
+  } catch (error) {
+    console.error('Error fetching lock status:', error);
+    return null; // Return null on error
   }
 }
 
@@ -190,5 +251,5 @@ export async function disconnectFromDevice(deviceId: string) {
 
 export function onDisconnect(deviceId: string): void {
   console.log(`device ${deviceId} disconnected, attempting to reconnect...`);
-  // connectToDevice(deviceId);
+  connectToDevice(deviceId);
 }

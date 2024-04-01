@@ -15,9 +15,9 @@
 
       <!-- List of discovered devices -->
       <ion-list v-if="devices.length > 0">
-        <ion-item v-for="device in devices" :key="device.deviceId" @click="isConnectedToDevice(device) ? openBikeDetail(device) : selectAndConnectToDevice(device)">
+        <ion-item v-for="device in devices" :key="device.deviceId" @click="isConnectedToDevice(device.deviceId) ? openBikeDetail(device) : selectAndConnectToDevice(device)">
           {{ device.name || 'Unknown Device' }} (RSSI: {{ device.rssi }})
-          <ion-button slot="end">{{ isConnectedToDevice(device) ? 'Connected' : 'Pair' }}</ion-button>
+          <ion-button slot="end">{{ isConnectedToDevice(device.deviceId) ? 'Connected' : 'Pair' }}</ion-button>
         </ion-item>
       </ion-list>
 
@@ -27,6 +27,14 @@
           {{ isScanning ? 'Scanning...' : 'Scan for Devices' }}
         </ion-button>
       </div> -->
+
+      <div class="lock-button" @click="toggleLock()" :disabled="!isConnected()" :class="{ 'connecting': !isConnected(), 'locked': isConnected() && isLocked, 'unlocked': isConnected() && !isLocked }">
+        <transition name="icon-fade" mode="out-in">
+          <i v-if="!isConnected()" key="connecting" class="fas fa-spinner fa-spin"></i>
+          <i v-else-if="isConnected() && isLocked" key="locked" class="fas fa-lock"></i>
+          <i v-else key="unlocked" class="fas fa-lock-open"></i>
+        </transition>
+      </div>
     </ion-content>
   </ion-page>
 </template>
@@ -37,10 +45,14 @@ import {
   devices,
   connectToDevice,
   getSavedDeviceId,
+  isConnected,
   isConnectedToDevice,
   scanForDevices,
   selectAndConnectToDevice,
   initializeBle,
+  isLocked,
+  fetchLockStatus,
+  toggleLock,
 } from '@/services/BleService';
 import { ref, onMounted } from 'vue';
 import { BleDevice } from '@/types/BleDevice';
@@ -67,22 +79,6 @@ const startScan = async (event: CustomEvent) => {
   }, 2000); // The delay here should match the scanning timeout
 };
 
-// const handleConnectionOrScan = async () => {
-//   isScanning.value = true; // Optionally indicate scanning or connecting activity
-  
-//   const deviceId = await getSavedDeviceId();
-//   if (deviceId) {
-//     await autoConnectToSavedDevice().catch((error) => {
-//       console.error("Error connecting to device:", error);
-//       // Optionally handle connection error, like alerting the user
-//     });
-//   } else {
-//     startScan(); // Assume this method initiates scanning and handles its own state
-//   }
-
-//   isScanning.value = false; // Reset scanning state if needed
-// };
-
 const openBikeDetail = (device: BleDevice) => {
   console.log('Opening bike detail for device:', device);
   const targetPath = `/home/tab1/bike/${device.deviceId}`;
@@ -90,8 +86,21 @@ const openBikeDetail = (device: BleDevice) => {
   router.push(targetPath);
 };
 
+// Lifecycle hooks
 onMounted(async () => {
   await initializeBle();
+  
+  const savedDeviceId = await getSavedDeviceId(); // Fetch the saved device ID if any
+  if (savedDeviceId && isConnectedToDevice(savedDeviceId)) {
+    const status = await fetchLockStatus(savedDeviceId); // Fetch the lock status
+    if (status !== null) {
+      isLocked.value = status; // Only assign if status is not null
+    } else {
+      // Handle the null case, maybe set a default or show an error
+      console.error('Unable to fetch lock status');
+      // isLocked.value could be set to a default or handled appropriately
+    }
+  }
 });
 </script>@/services/BleService
 
@@ -106,4 +115,75 @@ onMounted(async () => {
   bottom: 20px; /* Adjust this value based on desired distance from the bottom */
   padding: 0 10px; /* Ensures some padding on the sides */
 }
+
+/* .flip-transition-enter-active, .flip-transition-leave-active {
+  transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.3s ease;
+}
+.flip-transition-enter, .flip-transition-leave-to {
+  transform: rotateY(90deg);
+  opacity: 0.5;
+} */
+
+/* .icon-fade-enter-active, .icon-fade-leave-active {
+  transition: opacity 0.3s ease;
+} */
+
+/* .icon-fade-enter, .icon-fade-leave-to {
+  opacity: 0.5;
+} */
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.fa-spinner {
+  animation: spin 2s linear infinite;
+}
+
+.lock-button {
+  position: fixed;
+  bottom: 5vh; /* Positioned at the bottom 10% of the viewport height */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Adjust horizontal positioning */
+  width: 40vw; /* Width is 10% of the viewport width */
+  height: 40vw; /* Height is the same as width to maintain a circle */
+  border-radius: 50%; /* Rounded edges for the circle */
+  background-color: #707070; /* Example: gray background */
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20vw; /* Icon size responsive to viewport width */
+  transition: background-color 0.3s, transform 0.3s; /* Include transform to smooth out the active scaling */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Optional: Adds a subtle shadow for depth */
+}
+
+.lock-button:active {
+  transform: scale(0.9); /* Slight shrink effect to simulate button press */
+  transform: translateX(-50%) scale(0.9); /* Include translateX(-50%) to maintain horizontal position */
+}
+
+.lock-button.locked {
+  background-color: #F44336; /* Example: red for locked state */
+}
+
+.lock-button.unlocked {
+  background-color: #4CAF50; /* Example: green for unlocked state */
+}
+
+.lock-button i {
+  display: block;
+  /* transition: opacity 0.3s ease-in-out; */
+}
+
+.lock-button.connecting i,
+.lock-button:active i {
+  opacity: 0.5;
+}
+
 </style>
