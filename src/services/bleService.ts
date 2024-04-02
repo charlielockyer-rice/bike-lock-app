@@ -1,13 +1,16 @@
 import { ref, Ref } from 'vue';
+import { Capacitor } from '@capacitor/core';
 import { BleClient } from '@capacitor-community/bluetooth-le';
 import { BleDevice } from '@/types/BleDevice';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Preferences } from '@capacitor/preferences';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 export const devices: Ref<BleDevice[]> = ref([]);
 export const connectedDeviceId: Ref<string | null> = ref(null);
 export const connectionStatus: Ref<string> = ref('Disconnected');
 export const isLocked = ref();
+export const lastLockedTime = ref('');
 
 const BIKE_SERVICE = '9a20edd4-09de-4d6b-8a96-f5b93db51f48';
 const BIKE_ARMED = '1647ae1b-4a2d-4862-bd94-9b743dfc03f2';
@@ -198,6 +201,18 @@ export async function sendCommandToDevice(deviceId: string, command: number[]) {
 
 // This method toggles the bike's lock status
 export async function toggleLock(): Promise<boolean> {
+  // Check if the platform is iOS
+  if (Capacitor.getPlatform() === 'ios') {
+    // Invoke haptic feedback
+    try {
+      await Haptics.impact({
+        style: ImpactStyle.Light
+      });
+    } catch (error) {
+      console.error("Haptics not available", error);
+    }
+  }
+
   const deviceId = await getSavedDeviceId();
   try {
     // Determine the command based on the current lock status
@@ -208,7 +223,8 @@ export async function toggleLock(): Promise<boolean> {
     command === LOCK_COMMAND ? isLocked.value = true : isLocked.value = false;
 
     console.log('Lock status toggled');
-    return true; // Return true on success
+    lastLockedTime.value = new Date().toLocaleString(); // Set to the current date and time when locked
+    return true;
   } catch (error) {
     console.error('Error toggling lock status:', error);
     return false; // Return false on error

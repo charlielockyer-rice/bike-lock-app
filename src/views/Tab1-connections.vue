@@ -7,33 +7,26 @@
     </ion-header>
 
     <ion-content :fullscreen="true" class="ion-padding">
+      <div class="lock-status">
+        <p v-if="isConnected()">
+          {{ isLocked ? 'Bike is currently locked.' : 'Bike is currently unlocked.' }}
+        </p>
+        <p v-else>
+          Connecting to bike...
+        </p>
+        <p>Last locked: {{ lastLockedTime }}</p>
+      </div>
 
-      <!-- Pull-to-refresh for scanning -->
-      <ion-refresher slot="fixed" @ionRefresh="!isScanning && startScan($event)">
-        <ion-refresher-content></ion-refresher-content>
-      </ion-refresher>
-
-      <!-- List of discovered devices -->
-      <ion-list v-if="devices.length > 0">
-        <ion-item v-for="device in devices" :key="device.deviceId" @click="isConnectedToDevice(device.deviceId) ? openBikeDetail(device) : selectAndConnectToDevice(device)">
-          {{ device.name || 'Unknown Device' }} (RSSI: {{ device.rssi }})
-          <ion-button slot="end">{{ isConnectedToDevice(device.deviceId) ? 'Connected' : 'Pair' }}</ion-button>
-        </ion-item>
-      </ion-list>
-
-      <!-- Button at the bottom, visible when not scanning or no devices found -->
-      <!-- <div v-if="!isScanning || devices.length === 0" class="scan-button-container">
-        <ion-button @click="startScan" :disabled="isScanning" expand="block" size="large" class="ion-margin">
-          {{ isScanning ? 'Scanning...' : 'Scan for Devices' }}
-        </ion-button>
-      </div> -->
-
-      <div class="lock-button" @click="toggleLock()" :disabled="!isConnected()" :class="{ 'connecting': !isConnected(), 'locked': isConnected() && isLocked, 'unlocked': isConnected() && !isLocked }">
-        <transition name="icon-fade" mode="out-in">
-          <i v-if="!isConnected()" key="connecting" class="fas fa-spinner fa-spin"></i>
-          <i v-else-if="isConnected() && isLocked" key="locked" class="fas fa-lock"></i>
-          <i v-else key="unlocked" class="fas fa-lock-open"></i>
-        </transition>
+      <div class="lock-button-container">
+        <div class="lock-button" @click="toggleLock()" :disabled="!isConnected()" :class="{ 'connecting': !isConnected(), 'locked': isConnected() && isLocked, 'unlocked': isConnected() && !isLocked }">
+          <transition name="icon-fade" mode="out-in">
+            <i v-if="!isConnected()" key="connecting" class="fas fa-spinner fa-spin"></i>
+            <i v-else-if="isConnected() && isLocked" key="locked" class="fas fa-lock"></i>
+            <i v-else key="unlocked" class="fas fa-lock-open"></i>
+          </transition>
+        </div>
+        <!-- Lock action text moved here, outside the .lock-button but still inside its container -->
+        <p class="lock-action-text">{{ isConnected() ? (isLocked ? 'Tap to Unlock' : 'Tap to Lock') : '' }}</p>
       </div>
     </ion-content>
   </ion-page>
@@ -47,6 +40,7 @@ import {
   getSavedDeviceId,
   isConnected,
   isConnectedToDevice,
+  lastLockedTime,
   scanForDevices,
   selectAndConnectToDevice,
   initializeBle,
@@ -62,22 +56,8 @@ import { useRouter } from 'vue-router';
 const bleDevices = ref<BleDevice[]>([]);
 const selectedDevice = ref<BleDevice | null>(null);
 const isScanning = ref(false);
-
 // Instantiate the router
 const router = useRouter();
-
-const startScan = async (event: CustomEvent) => {
-  isScanning.value = true;
-
-  // Call the scanForDevices function which will update the bleDevices ref directly
-  await scanForDevices();
-
-  // After a delay, set isScanning to false to reflect that scanning has completed or stopped
-  setTimeout(() => {
-    isScanning.value = false;
-    (event.target as HTMLIonRefresherElement).complete();
-  }, 2000); // The delay here should match the scanning timeout
-};
 
 const openBikeDetail = (device: BleDevice) => {
   console.log('Opening bike detail for device:', device);
@@ -116,22 +96,6 @@ onMounted(async () => {
   padding: 0 10px; /* Ensures some padding on the sides */
 }
 
-/* .flip-transition-enter-active, .flip-transition-leave-active {
-  transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.3s ease;
-}
-.flip-transition-enter, .flip-transition-leave-to {
-  transform: rotateY(90deg);
-  opacity: 0.5;
-} */
-
-/* .icon-fade-enter-active, .icon-fade-leave-active {
-  transition: opacity 0.3s ease;
-} */
-
-/* .icon-fade-enter, .icon-fade-leave-to {
-  opacity: 0.5;
-} */
-
 @keyframes spin {
   0% {
     transform: rotate(0deg);
@@ -143,6 +107,22 @@ onMounted(async () => {
 
 .fa-spinner {
   animation: spin 2s linear infinite;
+}
+
+.lock-status {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #ffffff; /* Adjust as needed */
+}
+
+.lock-button-container {
+  text-align: center;
+}
+
+.lock-action-text {
+  margin-top: 0.5rem; /* Adjust spacing as needed */
+  font-size: 1.2rem;
+  color: #ffffff; /* Adjust color as needed */
 }
 
 .lock-button {
