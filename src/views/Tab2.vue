@@ -34,7 +34,7 @@ import 'leaflet/dist/leaflet.css'; // Make sure to import the Leaflet CSS
 onMounted(async () => {
   const map = L.map('mapid').setView([29.72078, -95.401097], 13);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png').addTo(map);
 
   const position = await geolocationService.getCurrentPosition();
 
